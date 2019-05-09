@@ -1,0 +1,8 @@
+<aspectj>
+    <weaver>
+        <include within="test.*"/>
+    </weaver>
+    <aspects>
+        <aspect name="test.test.AspectjTest"/>
+    </aspects>
+</aspectj>
