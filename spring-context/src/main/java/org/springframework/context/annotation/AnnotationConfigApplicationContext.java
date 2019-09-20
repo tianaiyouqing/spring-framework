@@ -62,7 +62,12 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+		// 注入注解相关配置
+		// 	AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
+		// 例如对@Configuration解析的类 ConfigurationClassPostProcessor
+		// 对@Autowired自动装配的后处理器 AutowiredAnnotationBeanPostProcessor
 		this.reader = new AnnotatedBeanDefinitionReader(this);
+		// bean扫描器
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -94,8 +99,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * @param basePackages the packages to check for annotated classes
 	 */
 	public AnnotationConfigApplicationContext(String... basePackages) {
-		this();
-		scan(basePackages);
+		// 初始化bean扫描器
+		this();// 注入注解版本相关配置
+		scan(basePackages);// 扫描bean， 并且把匹配的beanDefinition注册到BeanDefinitionRegister中
 		refresh();
 	}
 
@@ -166,6 +172,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * @see #register(Class...)
 	 * @see #refresh()
 	 */
+	@Override
 	public void scan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		this.scanner.scan(basePackages);

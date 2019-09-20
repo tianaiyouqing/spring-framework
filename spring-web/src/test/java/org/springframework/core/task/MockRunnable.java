@@ -32,4 +32,7 @@ public class MockRunnable implements Runnable {
 		return this.executed;
 	}
 
+	public static void main(String[] args) {
+		System.out.println("======");
+	}
 }

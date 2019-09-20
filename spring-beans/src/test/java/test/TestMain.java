@@ -22,9 +22,12 @@ public class TestMain {
 
 
     public static void main(String[] args) {
-        int[] arr = {1,2,3,4,5};
-        System.out.println(sum(arr, 0));
 
+        XmlBeanFactory xmlBeanFactory = new XmlBeanFactory(new ClassPathResource("SpringTest.xml"));
+
+        BeanTest beanTest = (BeanTest) xmlBeanFactory.getBean("beanTest");
+
+        System.out.println(beanTest.getStr());
 
     }
 

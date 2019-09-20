@@ -147,9 +147,11 @@ public abstract class AbstractCachingViewResolver extends WebApplicationObjectSu
 	@Nullable
 	public View resolveViewName(String viewName, Locale locale) throws Exception {
 		if (!isCache()) {
+			// 不存在缓存直接创建视图
 			return createView(viewName, locale);
 		}
 		else {
+			// 直接从缓存中提取
 			Object cacheKey = getCacheKey(viewName, locale);
 			View view = this.viewAccessCache.get(cacheKey);
 			if (view == null) {
@@ -246,6 +248,7 @@ public abstract class AbstractCachingViewResolver extends WebApplicationObjectSu
 	 */
 	@Nullable
 	protected View createView(String viewName, Locale locale) throws Exception {
+		// UrlBasedViewResolve中重写了 createView方法， 提供了 对 redirect: forward: 的解析和支持
 		return loadView(viewName, locale);
 	}
 

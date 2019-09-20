@@ -3,11 +3,8 @@
 
 <beans>
     <bean id="beanTest" class="test.BeanTest">
-        <property name="beanTestB" ref="beanTestB" />
+
     </bean>
 
-    <bean id="beanTestB" class="test.BeanTestB">
-        <property name="beanTest" ref="beanTest"></property>
-    </bean>
 
 </beans>
