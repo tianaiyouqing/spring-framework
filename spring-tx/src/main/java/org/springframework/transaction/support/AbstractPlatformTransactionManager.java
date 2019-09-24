@@ -375,7 +375,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
+				// 这里开启事物
 				doBegin(transaction, definition);
+				// 把当前事物的一些信息存到容器中，方便调用
 				prepareSynchronization(status, definition);
 				return status;
 			}

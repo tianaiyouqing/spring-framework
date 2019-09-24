@@ -279,13 +279,19 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			final InvocationCallback invocation) throws Throwable {
 
 		// If the transaction attribute is null, the method is non-transactional.
+
+		// 获取 TransactionAttributeSource 可以通过该对象获取 TransactionAttribute
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+		// 通过匹配方法匹配该方法使用可以获取到 TransactionAttribute @Transactional 把注解上的属性都封装到TransactionAttribute
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
+		// 获取 TransactionManager ， 如txAttr指定了特定的TransactionManager则使用自定义的，否则使用默认的TransactionManaer
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
+		// 这个目前还没了解该方法的具体用处
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
+			// 创建TransactionInfo ， 如果需要开启事物，会在这里开启
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 			Object retVal = null;
 			try {
@@ -295,12 +301,14 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 			catch (Throwable ex) {
 				// target invocation exception
+				// 回滚事物 如果抛出的异常需要回滚，则回滚， 否则提交事物
 				completeTransactionAfterThrowing(txInfo, ex);
 				throw ex;
 			}
 			finally {
 				cleanupTransactionInfo(txInfo);
 			}
+			// 通过 txInfo 中的TransactionAttribute中的属性来决定是回滚还是提交事物
 			commitTransactionAfterReturning(txInfo);
 			return retVal;
 		}
@@ -471,6 +479,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+				// 这里通过 TransactionManager来开启事物
 				status = tm.getTransaction(txAttr);
 			}
 			else {
@@ -494,7 +503,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	protected TransactionInfo prepareTransactionInfo(@Nullable PlatformTransactionManager tm,
 			@Nullable TransactionAttribute txAttr, String joinpointIdentification,
 			@Nullable TransactionStatus status) {
-
+		// 创建TransactionInfo ， 里面包装了 TransactionManager 和 TransactionAttribute
 		TransactionInfo txInfo = new TransactionInfo(tm, txAttr, joinpointIdentification);
 		if (txAttr != null) {
 			// We need a transaction for this method...
@@ -515,6 +524,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		// We always bind the TransactionInfo to the thread, even if we didn't create
 		// a new transaction here. This guarantees that the TransactionInfo stack
 		// will be managed correctly even if no transaction was created by this aspect.
+		// 绑定线程, 方便静态方法获取  TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 		txInfo.bindToThread();
 		return txInfo;
 	}
@@ -545,6 +555,11 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				logger.trace("Completing transaction for [" + txInfo.getJoinpointIdentification() +
 						"] after exception: " + ex);
 			}
+			// txInfo.transactionAttribute.rollbackOn(ex) 来判断抛出的这个异常是否要回滚，
+			// @Tranasactional(rollbackFor= xxx.class) 匹配如果是这个异常或者它的子类的话就回滚， 否则就提交
+			// 注解会把每一个rollbackFor 异常封装到 RollbackRuleAttribute里
+			// 如果没有指定会匹配 (ex instanceof RuntimeException || ex instanceof Error);
+			// 所以推荐指定 rollbackFor 的内容
 			if (txInfo.transactionAttribute != null && txInfo.transactionAttribute.rollbackOn(ex)) {
 				try {
 					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
@@ -563,6 +578,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				// We don't roll back on this exception.
 				// Will still roll back if TransactionStatus.isRollbackOnly() is true.
 				try {
+					// 如果抛出的异常不在匹配范围内， 则执行commit操作
 					txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
 				}
 				catch (TransactionSystemException ex2) {

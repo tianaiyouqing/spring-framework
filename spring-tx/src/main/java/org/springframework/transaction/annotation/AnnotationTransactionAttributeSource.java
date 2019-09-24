@@ -132,6 +132,7 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 	@Override
 	@Nullable
 	protected TransactionAttribute findTransactionAttribute(Method method) {
+		// 通过注解的方式解析 @Transactinal 来封装 TransactionAttribute
 		return determineTransactionAttribute(method);
 	}
 

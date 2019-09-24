@@ -75,6 +75,7 @@ public abstract class DataSourceUtils {
 	 */
 	public static Connection getConnection(DataSource dataSource) throws CannotGetJdbcConnectionException {
 		try {
+			// 这个获取Connlection方法和spring做了整合， 如果这个线程内有Collection就不会创建新的collection
 			return doGetConnection(dataSource);
 		}
 		catch (SQLException ex) {
